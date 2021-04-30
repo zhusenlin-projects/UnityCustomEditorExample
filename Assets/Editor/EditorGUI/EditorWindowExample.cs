@@ -5,11 +5,11 @@ using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEngine.Events;
 
-public class EditorWindowExample : EditorWindow
+public class EditorWindowExample : EditorWindow,IHasCustomMenu
 {
     #region AboutEditorStyle
-    private int SpaceLength = 40;  //间隔长度
-    private Vector2 scrollView;
+    [SerializeField] private int SpaceLength = 40;  //间隔长度
+    [SerializeField] private Vector2 scrollView;
     #endregion
     private bool toogle1;
 
@@ -26,11 +26,40 @@ public class EditorWindowExample : EditorWindow
     private float knob_Angle;
 
 
+    //static EditorWindowExample exampleWindow;
 
     [MenuItem("CustomEditor/Windows/Example")]
     private static void Open()
     {
+        /*
+         *  GetWindow<TYPE>();执行的操作为：
+         *    如果已经存在则获取EditorWindow
+         *    如果不存在则生成
+         *    最后执行Show函数
+         */
+        //var window=GetWindow<EditorWindowExample>(typeof(SceneView));  //添加到Scene Dock Area
         GetWindow<EditorWindowExample>();
+
+        /*
+         *  这是舍近求远的做法，
+         *  只为了展示寻找窗口对象的看法
+         */
+        var windows = Resources.FindObjectsOfTypeAll<EditorWindowExample>();
+        if(windows.Length>0)
+        {
+            var window = windows[0];
+            window.maxSize = new Vector2(600, 800);
+
+            var icon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/Gizmos/unity.png");
+            window.titleContent = new GUIContent("Example Windows", icon);
+        }
+        
+        //same code:
+        /*
+        if (exampleWindow == null)
+            exampleWindow = CreateInstance<EditorWindowExample>();
+        exampleWindow.Show();
+        */
     }
 
     private void OnGUI()
@@ -207,4 +236,32 @@ public class EditorWindowExample : EditorWindow
         selected = GUILayout.SelectionGrid(selected, new string[] { "ONE", "TWO", "THREE" }, 1, "PreferencesKeysElemenet");
         EditorGUI.indentLevel--;
     }
+
+
+    /// <summary>
+    /// 添加Menu Item
+    /// </summary>
+    /// <param name="menu"></param>
+    public void AddItemsToMenu(GenericMenu menu)
+    {
+        menu.AddItem(new GUIContent("EXAMPLE ITEM1"), false, () => { });
+        menu.AddItem(new GUIContent("EXAMPLE ITEM2"), true, () => { });
+    }
+
+    /*
+    [MenuItem("CustomEditor/Windows/Assets/Save EditorWindow")]
+    private static void SaveEditorWindow()
+    {
+        var windows = Resources.FindObjectsOfTypeAll<EditorWindowExample>();
+        if (windows.Length > 0)
+        {
+            var window = windows[0];
+            AssetDatabase.CreateAsset(window, "Assets/CustomAsset/EditorWindowExample1.asset");
+            AssetDatabase.Refresh();
+        }
+        
+    }
+    */
+
+
 }
